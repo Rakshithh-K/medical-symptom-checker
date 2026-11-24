@@ -46,17 +46,24 @@ const createSymptomCheck = async (req, res) => {
             });
         }
 
+        // Get predictions including descriptions from Flask
         const predictions = await getPredictions(symptoms);
 
+        // Save predictions to MongoDB.
+        // Mongoose stores only disease and model_score.
         const symptomCheck = await SymptomCheck.create({
             selectedSymptoms: symptoms,
             predictions
         });
 
+        // Return the original predictions with descriptions.
         res.status(201).json({
             status: "success",
             message: "Symptom check created successfully",
-            data: symptomCheck
+            data: {
+                ...symptomCheck.toObject(),
+                predictions
+            }
         });
 
     } catch (error) {
@@ -154,6 +161,7 @@ const updateSymptomCheck = async (req, res) => {
             });
         }
 
+        // Get updated predictions including descriptions
         const predictions = await getPredictions(symptoms);
 
         symptomCheck.selectedSymptoms = symptoms;
@@ -164,7 +172,10 @@ const updateSymptomCheck = async (req, res) => {
         res.status(200).json({
             status: "success",
             message: "Symptom check updated successfully",
-            data: symptomCheck
+            data: {
+                ...symptomCheck.toObject(),
+                predictions
+            }
         });
 
     } catch (error) {
